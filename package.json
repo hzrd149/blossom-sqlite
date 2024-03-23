@@ -1,0 +1,22 @@
+{
+  "name": "blossom-sqlite",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "author": "hzrd149",
+  "license": "MIT",
+  "scripts": {
+    "test": "node lib/test.js",
+    "build": "tsc",
+    "format": "prettier -w ."
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.9",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3"
+  }
+}
