@@ -1,4 +1,5 @@
 import { Database } from "better-sqlite3";
+import { IBlobMetadataStore } from "./interface.js";
 
 export type BlossomSQLiteOptions = {
   blobTable: string;
@@ -23,7 +24,7 @@ export type OwnerRow = {
 };
 export type InsertOwner = Omit<OwnerRow, "id">;
 
-export class BlossomSQLite {
+export class BlossomSQLite implements IBlobMetadataStore {
   db: Database;
   opts: BlossomSQLiteOptions;
 
@@ -100,7 +101,10 @@ export class BlossomSQLite {
     // remove owners
     this.db.prepare("DELETE FROM owners WHERE blob = ?").run(sha256);
     // remove blobs
-    this.db.prepare("DELETE FROM blobs WHERE sha256 = ?").run(sha256);
+    const result = this.db
+      .prepare("DELETE FROM blobs WHERE sha256 = ?")
+      .run(sha256);
+    return result.changes > 0;
   }
 
   hasOwner(sha256: string, pubkey: string) {
@@ -112,14 +116,18 @@ export class BlossomSQLite {
     return this.db.prepare(`SELECT * FROM owners`).all();
   }
   addOwner(sha256: string, pubkey: string) {
+    if (!this.hasBlob(sha256)) return false;
+
     this.db
       .prepare(`INSERT INTO owners (blob, pubkey) VALUES (?, ?)`)
       .run(sha256, pubkey);
+    return true;
   }
   removeOwner(sha256: string, pubkey: string) {
-    this.db
+    const result = this.db
       .prepare("DELETE FROM owners WHERE blob = ? AND pubkey = ?")
       .run(sha256, pubkey);
+    return result.changes > 0;
   }
 
   getOwnerBlobs(pubkey: string, _opts?: { since?: number; until?: number }) {
